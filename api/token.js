@@ -3,8 +3,8 @@ export default async function handler(req, res) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      username: process.env.SOFTFAIR_USERNAME,
-      password: process.env.SOFTFAIR_PASSWORD
+      username: bstrixner,
+      password: bstrixner1
     }),
   });
 
