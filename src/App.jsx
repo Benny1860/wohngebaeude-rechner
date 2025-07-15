@@ -2,20 +2,14 @@ import { useState } from "react";
 
 export default function App() {
   const [form, setForm] = useState({
-    zip: "",
-    city: "",
-    year: "",
-    area: "",
-    roof: "",
-    heating: "",
+    plz: "", ort: "", wohnflaeche: "", baujahr: "",
+    dachform: "", bauweise: "", heizung: "",
+    gebaeudetyp: "", nutzung: "", vorschaden: "nein", zustand: ""
   });
-
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async () => {
     setLoading(true);
@@ -30,14 +24,15 @@ export default function App() {
       },
       body: JSON.stringify({
         versicherungsbeginn: new Date().toISOString().split("T")[0],
-        wohnort: {
-          plz: form.zip,
-          ort: form.city
-        },
-        wohnflaecheQm: Number(form.area),
-        baujahr: form.year,
-        dachart: form.roof,
-        heizungsart: form.heating
+        wohnort: { plz: form.plz, ort: form.ort },
+        wohnflaecheQm: Number(form.wohnflaeche),
+        baujahr: form.baujahr,
+        dachart: form.dachform,
+        bauweise: form.bauweise,
+        heizungsart: form.heizung,
+        nutzungsart: form.nutzung,
+        gebaeudetyp: form.gebaeudetyp,
+        vorschaden: form.vorschaden === "ja"
       })
     });
 
@@ -47,26 +42,43 @@ export default function App() {
   };
 
   return (
-    <div style={{ padding: 16, maxWidth: 600, margin: "0 auto", fontFamily: "Arial" }}>
+    <div style={{ maxWidth: 640, margin: "0 auto", fontFamily: "Arial", padding: 16 }}>
       <h1>Wohngebäude-Rechner</h1>
-      <input name="zip" placeholder="PLZ" value={form.zip} onChange={handleChange} /><br />
-      <input name="city" placeholder="Ort" value={form.city} onChange={handleChange} /><br />
-      <input name="year" placeholder="Baujahr" value={form.year} onChange={handleChange} /><br />
-      <input name="area" placeholder="Wohnfläche m²" value={form.area} onChange={handleChange} /><br />
-      <input name="roof" placeholder="Dachform" value={form.roof} onChange={handleChange} /><br />
-      <input name="heating" placeholder="Heizungsart" value={form.heating} onChange={handleChange} /><br />
-      <button onClick={submit} disabled={loading}>
-        {loading ? "Lade..." : "Berechnen"}
-      </button>
-
-      {results.map((r, i) => (
-        <div key={i} style={{ border: "1px solid #ccc", padding: 12, marginTop: 12 }}>
-          <h3>{r.gesellschaft}</h3>
-          <p>Tarif: {r.tarifName}</p>
-          <p>Beitrag: {r.beitragJaehrlich} € / Jahr</p>
-          <button>Jetzt beantragen</button>
+      {[
+        ["plz", "PLZ"], ["ort", "Ort"], ["wohnflaeche", "Wohnfläche (m²)"],
+        ["baujahr", "Baujahr"], ["dachform", "Dachform"], ["bauweise", "Bauweise"],
+        ["heizung", "Heizungsart"], ["gebaeudetyp", "Gebäudetyp"],
+        ["nutzung", "Nutzung (Selbst/vermietet)"], ["zustand", "Zustand (Neubau/Bestand)"]
+      ].map(([name, label]) => (
+        <div key={name} style={{ marginBottom: 10 }}>
+          <label style={{ display: "block", fontWeight: "bold" }}>{label}</label>
+          <input type="text" name={name} value={form[name]} onChange={handleChange} style={{ width: "100%", padding: 8 }} />
         </div>
       ))}
+      <div style={{ marginBottom: 10 }}>
+        <label style={{ fontWeight: "bold" }}>Gab es Vorschäden?</label>
+        <select name="vorschaden" value={form.vorschaden} onChange={handleChange} style={{ width: "100%", padding: 8 }}>
+          <option value="nein">Nein</option>
+          <option value="ja">Ja</option>
+        </select>
+      </div>
+      <button onClick={submit} disabled={loading} style={{ padding: "10px 20px" }}>
+        {loading ? "Lade..." : "Vergleich starten"}
+      </button>
+
+      {results.length > 0 && (
+        <div style={{ marginTop: 20 }}>
+          <h2>Vergleichsergebnisse</h2>
+          {results.map((r, i) => (
+            <div key={i} style={{ border: "1px solid #ccc", marginBottom: 10, padding: 10 }}>
+              <strong>{r.gesellschaft}</strong><br />
+              Tarif: {r.tarifName}<br />
+              Beitrag: {r.beitragJaehrlich} €/Jahr<br />
+              <button>Jetzt beantragen</button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
