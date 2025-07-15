@@ -1,15 +1,15 @@
 export default async function handler(req, res) {
-  const username = process.env.SOFTFAIR_USERNAME;
-  const password = process.env.SOFTFAIR_PASSWORD;
-
   const response = await fetch("https://wohngebaeude-api.softfair-server.de/api/v1/token", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({
+      username: process.env.SOFTFAIR_USERNAME,
+      password: process.env.SOFTFAIR_PASSWORD
+    }),
   });
 
   if (!response.ok) {
-    return res.status(401).json({ error: "Token konnte nicht abgerufen werden" });
+    return res.status(401).json({ error: "Authentifizierung fehlgeschlagen" });
   }
 
   const data = await response.json();

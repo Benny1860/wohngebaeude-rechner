@@ -1,5 +1,5 @@
 {
-  "name": "wohngebaeude-rechner",
+  "name": "wohngebaeude-rechner-softfair",
   "version": "1.0.0",
   "scripts": {
     "dev": "vite",

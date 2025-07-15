@@ -1,75 +1,70 @@
 import { useState } from "react";
 
 export default function App() {
-  const [form, setForm] = useState({ zipCode: "", livingSpace: "" });
-  const [offers, setOffers] = useState([]);
+  const [form, setForm] = useState({
+    zip: "",
+    city: "",
+    year: "",
+    area: "",
+    roof: "",
+    heating: "",
+  });
+
   const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState([]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const calculate = () => {
+  const submit = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setOffers([
-        {
-          offerId: "demo1",
-          company: "Beispielfair",
-          rate: "Premium Plus",
-          coverages: ["Feuer", "Wasser", "Sturm"],
-          premium: 489,
+    const tokenRes = await fetch("/api/token");
+    const { token } = await tokenRes.json();
+
+    const res = await fetch("https://wohngebaeude-api.softfair-server.de/api/v1/angebote", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        versicherungsbeginn: new Date().toISOString().split("T")[0],
+        wohnort: {
+          plz: form.zip,
+          ort: form.city
         },
-      ]);
-      setLoading(false);
-    }, 1000);
+        wohnflaecheQm: Number(form.area),
+        baujahr: form.year,
+        dachart: form.roof,
+        heizungsart: form.heating
+      })
+    });
+
+    const data = await res.json();
+    setResults(data.angebote || []);
+    setLoading(false);
   };
 
   return (
-    <div style={{ fontFamily: "Arial", maxWidth: 600, margin: "0 auto", padding: 16 }}>
-      <h1 style={{ fontSize: 24, fontWeight: "bold", color: "#1e3a8a", marginBottom: 16 }}>
-        Wohngebäude-Rechner
-      </h1>
-      <div style={{ border: "1px solid #ccc", borderRadius: 8, padding: 16, marginBottom: 16 }}>
-        <input
-          name="zipCode"
-          placeholder="PLZ"
-          value={form.zipCode}
-          onChange={handleChange}
-          style={{ width: "100%", padding: 8, marginBottom: 12, border: "1px solid #ccc", borderRadius: 4 }}
-        />
-        <input
-          name="livingSpace"
-          type="number"
-          placeholder="Wohnfläche (m²)"
-          value={form.livingSpace}
-          onChange={handleChange}
-          style={{ width: "100%", padding: 8, marginBottom: 12, border: "1px solid #ccc", borderRadius: 4 }}
-        />
-        <button
-          onClick={calculate}
-          disabled={loading}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#2563EB",
-            color: "#fff",
-            border: "none",
-            borderRadius: 4,
-          }}
-        >
-          {loading ? "Lade..." : "Beitrag berechnen"}
-        </button>
-      </div>
+    <div style={{ padding: 16, maxWidth: 600, margin: "0 auto", fontFamily: "Arial" }}>
+      <h1>Wohngebäude-Rechner</h1>
+      <input name="zip" placeholder="PLZ" value={form.zip} onChange={handleChange} /><br />
+      <input name="city" placeholder="Ort" value={form.city} onChange={handleChange} /><br />
+      <input name="year" placeholder="Baujahr" value={form.year} onChange={handleChange} /><br />
+      <input name="area" placeholder="Wohnfläche m²" value={form.area} onChange={handleChange} /><br />
+      <input name="roof" placeholder="Dachform" value={form.roof} onChange={handleChange} /><br />
+      <input name="heating" placeholder="Heizungsart" value={form.heating} onChange={handleChange} /><br />
+      <button onClick={submit} disabled={loading}>
+        {loading ? "Lade..." : "Berechnen"}
+      </button>
 
-      {offers.map((offer) => (
-        <div key={offer.offerId} style={{ border: "1px solid #ccc", borderRadius: 8, padding: 16 }}>
-          <h2 style={{ fontWeight: "bold", color: "#1d4ed8" }}>{offer.company}</h2>
-          <p>Tarif: {offer.rate}</p>
-          <p>Leistungen: {offer.coverages.join(", ")}</p>
-          <p style={{ fontWeight: "bold", fontSize: 18 }}>{offer.premium} € / Jahr</p>
-          <button style={{ marginTop: 8, padding: "8px 16px", backgroundColor: "#15803d", color: "#fff", border: "none", borderRadius: 4 }}>
-            Online beantragen
-          </button>
+      {results.map((r, i) => (
+        <div key={i} style={{ border: "1px solid #ccc", padding: 12, marginTop: 12 }}>
+          <h3>{r.gesellschaft}</h3>
+          <p>Tarif: {r.tarifName}</p>
+          <p>Beitrag: {r.beitragJaehrlich} € / Jahr</p>
+          <button>Jetzt beantragen</button>
         </div>
       ))}
     </div>
