@@ -41,20 +41,43 @@ export default function App() {
     setLoading(false);
   };
 
+  const dropdowns = {
+    dachform: ["Satteldach", "Flachdach", "Walmdach", "Pultdach", "Mansarddach", "Zeltdach"],
+    bauweise: ["Massivbauweise", "Holzständerbauweise", "Fertigbauweise", "Mischbauweise"],
+    heizung: ["Zentralheizung", "Gasheizung", "Ölheizung", "Fernwärme", "Wärmepumpe", "Pelletheizung"],
+    gebaeudetyp: ["Freistehend", "Doppelhaushälfte", "Reihenmittelhaus", "Reihenendhaus", "Mehrfamilienhaus"],
+    nutzung: ["Selbst genutzt", "Vermietet"],
+    zustand: ["Neubau", "Bestand"]
+  };
+
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", fontFamily: "Arial", padding: 16 }}>
       <h1>Wohngebäude-Rechner</h1>
-      {[
-        ["plz", "PLZ"], ["ort", "Ort"], ["wohnflaeche", "Wohnfläche (m²)"],
-        ["baujahr", "Baujahr"], ["dachform", "Dachform"], ["bauweise", "Bauweise"],
-        ["heizung", "Heizungsart"], ["gebaeudetyp", "Gebäudetyp"],
-        ["nutzung", "Nutzung (Selbst/vermietet)"], ["zustand", "Zustand (Neubau/Bestand)"]
-      ].map(([name, label]) => (
+      {["plz", "ort", "wohnflaeche", "baujahr"].map((name) => (
         <div key={name} style={{ marginBottom: 10 }}>
-          <label style={{ display: "block", fontWeight: "bold" }}>{label}</label>
-          <input type="text" name={name} value={form[name]} onChange={handleChange} style={{ width: "100%", padding: 8 }} />
+          <label style={{ display: "block", fontWeight: "bold" }}>{name.toUpperCase()}</label>
+          <input
+            type="text"
+            name={name}
+            value={form[name]}
+            onChange={handleChange}
+            style={{ width: "100%", padding: 8 }}
+          />
         </div>
       ))}
+
+      {Object.entries(dropdowns).map(([name, options]) => (
+        <div key={name} style={{ marginBottom: 10 }}>
+          <label style={{ display: "block", fontWeight: "bold" }}>{name.charAt(0).toUpperCase() + name.slice(1)}</label>
+          <select name={name} value={form[name]} onChange={handleChange} style={{ width: "100%", padding: 8 }}>
+            <option value="">Bitte wählen</option>
+            {options.map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+        </div>
+      ))}
+
       <div style={{ marginBottom: 10 }}>
         <label style={{ fontWeight: "bold" }}>Gab es Vorschäden?</label>
         <select name="vorschaden" value={form.vorschaden} onChange={handleChange} style={{ width: "100%", padding: 8 }}>
@@ -62,6 +85,7 @@ export default function App() {
           <option value="ja">Ja</option>
         </select>
       </div>
+
       <button onClick={submit} disabled={loading} style={{ padding: "10px 20px" }}>
         {loading ? "Lade..." : "Vergleich starten"}
       </button>
