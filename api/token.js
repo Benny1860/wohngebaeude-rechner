@@ -4,7 +4,7 @@ export default async function handler(req, res) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       username: bstrixner,
-      password: bstrixner1
+      password: strixner1
     }),
   });
 
